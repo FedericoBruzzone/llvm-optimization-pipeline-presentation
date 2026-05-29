@@ -53,20 +53,18 @@
 % ============================
 \section{Introduction}
 
-\begin{frame}[fragile]{Optimizing compilers and LLVM}
+\begin{frame}[fragile]{Optimizing compilers}
 	\begin{center}
 
 	Since the dawn of computing, compiler optimizations have long bridged high-level abstractions and efficient machine code~\cite{Ershov58, Heller61, McKeeman65, Gear65, Lowry69, Busam69}.
 
-	\textbf{Optimizing compilers}~\cite{Allen66, Wulf73b} use analysis passes to guide transformations~\cite{Cooper22, Kennedy01b, Paige97} that enhance performance without altering observable behavior~\cite{Bacon94, Dodds18, Aho06}---modern architectures (e.g., x86-64, Aarch64) make this a delicate interplay of interdependent passes~\cite{Cooper22}.
+	\textbf{Optimizing compilers}~\cite{Allen66, Wulf73b} use analysis passes to guide transformations~\cite{Cooper22, Kennedy01b, Paige97} that enhance performance without altering observable behavior~\cite{Bacon94, Dodds18, Aho06}---modern architectures (e.g., x86-64, Aarch64) make this an interplay of interdependent passes~\cite{Cooper22}.
 
 	\textbf{LLVM}~\cite{Lattner04} exemplifies this complexity, serving as the standard backend for C/C++, Rust~\cite{Matsakis14}, Julia~\cite{Bezanson12}, and via \textbf{MLIR}~\cite{Lattner21}---for \textit{machine learning} (ML) and \textit{deep learning} (DL) stacks~\cite{Paszke19, Abadi16} that rely on ML/DL optimizing compilers~\cite{Li20b, Xing19, Zhao18, Liu22d} (e.g., NVCC\footnote{
 		\mylink{https://developer.nvidia.com/cuda-llvm-compiler}{developer.nvidia.com/cuda-llvm-compiler}
 	}, OpenXLA~\cite{Sabne20}, TVM~\cite{Chen18c}) and automotive pipelines.\footnote{
 		Tesla Full Self-Driving v14.3: \mylink{https://stats.tessie.com/versions/2026.2.9.6}{stats.tessie.com/versions/2026.2.9.6}
 	}
-
-	\textit{Quantifying individual pass impact is therefore critical across these domains.}
 
 	\end{center}
 
@@ -86,33 +84,85 @@
 	% The \verb|\scribedivider| ornament works on slides too.
 \end{frame}
 
-\begin{frame}{Callout boxes and dingbats}
-	\begin{columns}[T]
-		\begin{column}{0.5\textwidth}
-			\begin{infobox}{Definition}
-				A clean callout with a colored left rule.
-			\end{infobox}
-			\begin{warnbox}{Warning}
-				A red box for caveats.
-			\end{warnbox}
-			\begin{tipbox}{Tip}
-				A green box for tips and examples.
-			\end{tipbox}
-		\end{column}
-		\begin{column}{0.5\textwidth}
-			Inline boxes: \infoboxinline{info}, \warnboxinline{warn},
-			\noteboxinline{note}.
-			\medskip
+\begin{frame}{LLVM Optimization Pipeline}
+	LLVM is a modular SSA-based compilation framework~\cite{Rosen88, Alpern88, Cytron89}. Its \texttt{opt} tool applies sequences of analysis and transformation passes, forming the core optimization pipeline.
 
-			Colored dingbats, ported from \tool{scribe}:
-			\begin{itemize}
-				\item \dinggreen{52}~done
-				\item \dingred{56}~failed
-				\item \dingblue{43}~note
-			\end{itemize}
-			\jdcomment{Another comment, in blue, from John Doe.}
-		\end{column}
-	\end{columns}
+
+	\begin{center}
+	\includegraphics[width=0.8\textwidth]{./images/LLVM-Passes-only.png}
+	\end{center}
+
+	It comprises parameterized nested managers (\texttt{{\color{MidnightBlue}{\textbf{module}}}, {\color{OliveGreen}{\textbf{function}}}, {\color{BrickRed}{\textbf{cgscc}}}, {\color{Mulberry}{\textbf{loop}}}, {\color{BlueGreen}{\textbf{loop-mssa}}}}), each scoped to a specific IR granularity.
+\end{frame}
+
+\begin{frame}{We need better optimization evaluation!}
+	Per-pass impact analysis is critical for compiler engineers and end-users~\cite{Popescu25, Demertzi11, Cavazos07} to: 
+	\begin{itemize}
+    	\item[\dingblue{43}] address \textit{undecidable}~\cite{Ashouri17, Davidson07, Vegdahl82} phase ordering challenges~\cite{Touati06, Freudenberger92, Zhao25},
+    	\item[\dingblue{43}] improve selection heuristics and ML-based auto-tuning~\cite{Pan25, Zhu24, Ashouri18, Tiwari09, Pan08, Pan06, Kulkarni04b},
+    	\item[\dingblue{43}] guide new optimization design, and
+    	\item[\dingblue{43}] understand pass--hardware interactions~\cite{Davidson07}.
+  	\end{itemize}
+
+	However, existing work evaluates LLVM optimizations in isolation or focuses mainly on execution time~\cite{DeLaTorre18}, overlooking multi-dimensional trade-offs---a pass improving runtime may increase binary size or hurt cache locality.
+
+	Moreover, the debate over hand-written GPU kernels vs.\ ML-compiler-optimized kernels remains open~\cite{Palkar18}.\footnote{
+  		\mylink{https://venturebeat.com/technology/octoml-optimizes-apache-tvm-for-apples-m1-beats-core-ml-4-by-29}{octoml-optimizes-apache-tvm-for-apples-m1-beats-core-ml-4-by-29}
+	}
+\end{frame}
+
+\begin{frame}{A Study to Rule Them All {\small (150+ studies at ICSE'26 A*)}}
+	We address this gap with a  multi-dimensional, systematic empirical study of the LLVM \texttt{-O3} pipeline, measuring not only \textbf{runtime} but also \textbf{compile time}, \textbf{binary size}, and a broad set of \textbf{HW performance counters}\footnote{
+   		E.g., those exposed by Model-Specific Registers (MSRs) on x86 CPUs: cache misses, \texttt{cycles/instructions} for ILP, and energy consumption~\cite{VanKempen25, Lee24, Pereira17} via RAPL.
+	} similar to the methodology of Chen \textit{et al.}~\cite{Chen12}.
+	
+	{\small
+	\begin{infobox}{}
+		\textbf{RQ\textsubscript{1}.} \textit{What is the marginal performance impact of individual passes within the LLVM \texttt{-O3} optimization pipeline?}	
+	\end{infobox}
+	\begin{infobox}{}
+		\textbf{RQ\textsubscript{2}.} \textit{To what extent do optimization passes trade off execution speed, compilation overhead, and binary footprint?}
+	\end{infobox}
+	\begin{infobox}{}
+		\textbf{RQ\textsubscript{3}.} \textit{How do IR-level transformations affect the evolution of HW performance counters across optimization pipelines?}	
+	\end{infobox}
+	\begin{infobox}{}
+		\textbf{RQ\textsubscript{4}.} \textit{What fraction of achievable speedup is lost to intra-pipeline interference, and which pass drives the loss?}	
+	\end{infobox}
+	}
+\end{frame}
+
+\begin{frame}{Research questions}
+	
+	
+
+
+	% \begin{columns}[T]
+	% 	\begin{column}{0.5\textwidth}
+	% 		\begin{infobox}{Definition}
+	% 			A clean callout with a colored left rule.
+	% 		\end{infobox}
+	% 		\begin{warnbox}{Warning}
+	% 			A red box for caveats.
+	% 		\end{warnbox}
+	% 		\begin{tipbox}{Tip}
+	% 			A green box for tips and examples.
+	% 		\end{tipbox}
+	% 	\end{column}
+	% 	\begin{column}{0.5\textwidth}
+	% 		Inline boxes: \infoboxinline{info}, \warnboxinline{warn},
+	% 		\noteboxinline{note}.
+	% 		\medskip
+
+	% 		Colored dingbats, ported from \tool{scribe}:
+	% 		\begin{itemize}
+	% 			\item \dinggreen{52}~done
+	% 			\item \dingred{56}~failed
+	% 			\item \dingblue{43}~note
+	% 		\end{itemize}
+	% 		\jdcomment{Another comment, in blue, from John Doe.}
+	% 	\end{column}
+	% \end{columns}
 \end{frame}
 
 \section{Math and code}
