@@ -10,6 +10,20 @@
 \usepackage{lipsum} % For generating dummy text
 \newcommand{\mylink}[2]{\href{#1}{\textcolor{black}{\textsf{#2}}}}
 
+\lstdefinestyle{scribe}{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{MidnightBlue}\bfseries,
+    commentstyle=\color{black!55}\itshape,
+    stringstyle=\color{ForestGreen!70!black},
+	identifierstyle=\color{RawSienna},
+    numberstyle=\tiny\color{black!45},
+    showstringspaces=false,
+    breaklines=true,
+    captionpos=b,
+    aboveskip=1em,
+    belowskip=0.5em,
+}
+\lstset{style=scribe}
 
 % Define different aliases (along with colors) for comments
 \scribedefinecomment{fb}{orange}
@@ -132,10 +146,34 @@
 	}
 \end{frame}
 
-\begin{frame}{Research questions}
-	
-	
+\begin{frame}{Outline}
+	Paper Structure
+\end{frame}
 
+
+\begin{frame}[fragile]{Pick and Choose 2mm Kernal from PolyBench}
+\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+		\begin{lstlisting}[basicstyle=\ttfamily\small, keywordstyle=\color{scribeaccent}\bfseries, language=C]
+/* D = a*A*B*C + b*D */
+for (i = 0; i < NI; i++)
+ for (j = 0; j < NJ; j++) 
+  for (k = 0; k < NK; k++)
+    t[i][j] += a*A[i][k]*B[k][j];
+
+for (i = 0; i < NI; i++)
+ for (j = 0; j < NL; j++) {
+  D[i][j] *= b;
+  for (k = 0; k < NJ; k++)
+   D[i][j] += t[i][k]*C[k][j];
+ }
+		\end{lstlisting}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+		TMP
+	\end{column}
+\end{columns}
+\end{frame}
 
 	% \begin{columns}[T]
 	% 	\begin{column}{0.5\textwidth}
@@ -163,7 +201,7 @@
 	% 		\jdcomment{Another comment, in blue, from John Doe.}
 	% 	\end{column}
 	% \end{columns}
-\end{frame}
+% \end{frame}
 
 \section{Math and code}
 
