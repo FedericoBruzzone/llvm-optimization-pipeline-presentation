@@ -9,7 +9,7 @@
 
 \usepackage{svg}
 \usepackage{lipsum} % For generating dummy text
-\newcommand{\mylink}[2]{\href{#1}{\textcolor{black}{\textsf{#2}}}}
+\newcommand{\mylink}[2]{\href{#1}{\textsf{#2}}}
 
 \lstdefinestyle{scribe}{
     basicstyle=\ttfamily\small,
@@ -43,7 +43,7 @@
 \date{22 June 2026}
 
 % Short versions used in the footline
-\title[A Study of the LLVM Optimization Pipeline]{A Multi-Dimensional, Per-Pass Empirical Study of\\ the LLVM Optimization Pipeline}
+\title[]{A Multi-Dimensional, Per-Pass Empirical Study of\\ the LLVM Optimization Pipeline}
 \author[Federico Bruzzone]{Federico Bruzzone \orcidlink{0000-0002-8701-8853}}
 \subtitle{Ph.D. Student's Activity Report}
 
@@ -59,9 +59,9 @@
 % ============================
 % ========== Outline =========
 % ============================
-\begin{frame}{Outline}
-	\tableofcontents
-\end{frame}
+% \begin{frame}{Outline}
+% 	\tableofcontents
+% \end{frame}
 
 % ============================
 % ========== Content =========
@@ -160,8 +160,8 @@
     Runtime uses \texttt{hyperfine} (3 warmup, 15 timed runs), counters use \texttt{perf stat} (2 warmup, 10 timed) in a separate batch---10 runs suffice for CI95 below 1\% on all counter metrics.
 \end{frame}
 
-% cp tesi-bruzzone/trunk/papers/icse27/submission/figs/polybench_figs/fig19u_pass_impact_ranking_mean_median.pdf ./llvm-phd-presentation/images
-\begin{frame}[fragile]{Cumulative speedup, normalised gain, and Top-20 passes}
+% cp tesi-bruzzone/trunk/papers/icse27/submission/figs/polybench_figs/fig16e_cache_ipc_cpi_energy_ribbon_2x3.pdf ./llvm-phd-presentation/images
+\begin{frame}[fragile]{Cumulative speedup, normalised gain, and top-20 passes}
     \begin{columns}[T]
 	\begin{column}{0.5\textwidth}
            \begin{center}
@@ -195,7 +195,7 @@
 for (i = 0; i < NI; i++)
  for (j = 0; j < NJ; j++) 
   for (k = 0; k < NK; k++)
-    t[i][j] += a*A[i][k]*B[k][j];
+   t[i][j] += a*A[i][k]*B[k][j];
 
 for (i = 0; i < NI; i++)
  for (j = 0; j < NL; j++) {
@@ -217,30 +217,59 @@ for (i = 0; i < NI; i++)
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Hardware-counter signatures at the top-10 passes}
+\begin{frame}[fragile]{HW-counter signatures at the top-10 passes (\texttt{2mm})}
     \begin{columns}[T]
 	\begin{column}{0.5\textwidth}
+    \begin{center}
+    {\scriptsize The blue-colored boxes are \textbf{improvements} over the baseline (\texttt{-O0}), while red-colored are \textbf{regressions}.}
     \includegraphics[width=\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/2mm.png}
+    \end{center}
     \end{column}
+
     \begin{column}{0.5\textwidth}
+        \begin{center}
         \begin{itemize}
-            \item[\dingblue{43}] The blue-colored boxes are improvements over the baseline (\texttt{-O0}), while red-colored are regressions.
+            \item[\dingblue{43}] The branch predictor is not waiting: \texttt{branch\_misses} are 0 everywhere! Thanks to prefetching due to constant stride.
+            \item[\dingblue{43}] \texttt{licm} is introducing lots of regressions, but recovered later.
+            \item[\dingblue{43}] \texttt{loop-unroll} decreased \texttt{d1}, \texttt{l1\_i}, and \texttt{l1\_d} counters. The energy consumption is also decreasing.
+            \item[\dingblue{43}] \texttt{loop-vectorize} is not soo significant, but it is still worth mentioning.
         \end{itemize}
+        \end{center}
     \end{column}
     \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]{HW counters aggregated across the PolyBench suite}
+    \includegraphics[width=\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/fig16e_cache_ipc_cpi_energy_ribbon_2x3.pdf}
+\end{frame}
+
+
+\begin{frame}[fragile]{Bounded phase-interference loss}
+    \begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+    \begin{center}
+    \includegraphics[width=0.9\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/potential_loss_phase_interference_left.pdf}
+    \end{center}
+    \end{column}
+
+    \begin{column}{0.5\textwidth}
+        \begin{center}
+We \textbf{define} a novel optimistic additive bound:
+\[
+    S_\mathrm{opt} = \sum_i \max(\Delta S_i, 0),
+\]
+\[
+    L = \frac{S_\mathrm{opt} - [S_\mathrm{actual}]_0^{S_\mathrm{opt}}}{S_\mathrm{opt}},
+\]
+
+where $[x]_0^{S_\mathrm{opt}} = \min(\max(x,0), S_\mathrm{opt})$ and $S_\mathrm{actual} = S_\mathrm{final} - 1$.
+
+        \end{center}
+    \end{column}
+    \end{columns}
 
 
 
-
-
-\begin{frame}[fragile]{Summary}
-	\begin{itemize}
-		\item One theme file: \texttt{beamerthemescribe.sty}
-		\item Same fonts, colors, and ornament as \texttt{scribe.cls}
-		\item Toggle comments with \verb|\scribeshowcommentsfalse|
-	\end{itemize}
 \end{frame}
 
 \begin{frame}[plain,noframenumbering]
