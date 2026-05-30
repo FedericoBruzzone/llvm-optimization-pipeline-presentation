@@ -7,6 +7,7 @@
 %   \usetheme[noframenumbers]{scribe} % hide the frame counter
 %   \usetheme[nosectionpages]{scribe} % no automatic section divider slides
 
+\usepackage{svg}
 \usepackage{lipsum} % For generating dummy text
 \newcommand{\mylink}[2]{\href{#1}{\textcolor{black}{\textsf{#2}}}}
 
@@ -130,30 +131,65 @@
    		E.g., those exposed by Model-Specific Registers (MSRs) on x86 CPUs: cache misses, \texttt{cycles/instructions} for ILP, and energy consumption~\cite{VanKempen25, Lee24, Pereira17} via RAPL.
 	} similar to the methodology of Chen \textit{et al.}~\cite{Chen12}.
 	
-	{\small
-	\begin{infobox}{}
-		\textbf{RQ\textsubscript{1}.} \textit{What is the marginal performance impact of individual passes within the LLVM \texttt{-O3} optimization pipeline?}	
-	\end{infobox}
-	\begin{infobox}{}
-		\textbf{RQ\textsubscript{2}.} \textit{To what extent do optimization passes trade off execution speed, compilation overhead, and binary footprint?}
-	\end{infobox}
-	\begin{infobox}{}
-		\textbf{RQ\textsubscript{3}.} \textit{How do IR-level transformations affect the evolution of HW performance counters across optimization pipelines?}	
-	\end{infobox}
-	\begin{infobox}{}
-		\textbf{RQ\textsubscript{4}.} \textit{What fraction of achievable speedup is lost to intra-pipeline interference, and which pass drives the loss?}	
-	\end{infobox}
-	}
+    {\small
+    \only<1>{ \begin{graybox}{} \color{gray}\textbf{RQ\textsubscript{1}.} \textit{What is the marginal performance impact of individual passes within the LLVM \texttt{-O3} optimization pipeline?} \end{graybox} }
+    \only<2->{ \begin{infobox}{} \textbf{RQ\textsubscript{1}.} \textit{What is the marginal performance impact of individual passes within the LLVM \texttt{-O3} optimization pipeline?} \end{infobox} }
+
+    \only<1-2>{ \begin{graybox}{} \color{gray}\textbf{RQ\textsubscript{2}.} \textit{To what extent do optimization passes trade off execution speed, compilation overhead, and binary footprint?} \end{graybox} }
+    \only<3->{ \begin{infobox}{} \textbf{RQ\textsubscript{2}.} \textit{To what extent do optimization passes trade off execution speed, compilation overhead, and binary footprint?} \end{infobox} }
+
+    \only<1-3>{ \begin{graybox}{} \color{gray}\textbf{RQ\textsubscript{3}.} \textit{How do IR-level transformations affect the evolution of HW performance counters across optimization pipelines?} \end{graybox} }
+    \only<4->{ \begin{infobox}{} \textbf{RQ\textsubscript{3}.} \textit{How do IR-level transformations affect the evolution of HW performance counters across optimization pipelines?} \end{infobox} }
+
+    \only<1-4>{ \begin{graybox}{} \color{gray}\textbf{RQ\textsubscript{4}.} \textit{What fraction of achievable speedup is lost to intra-pipeline interference, and which pass drives the loss?} \end{graybox} }
+    \only<5->{ \begin{infobox}{} \textbf{RQ\textsubscript{4}.} \textit{What fraction of achievable speedup is lost to intra-pipeline interference, and which pass drives the loss?} \end{infobox} }
+}
 \end{frame}
 
-\begin{frame}{Outline}
-	Paper Structure
+\begin{frame}[fragile]{Experimental setup}
+    All experiments ran on Intel Core i9-12900KF:
+    \begin{itemize}
+        \item[\dingblue{43}] Alder Lake (8P+8E cores, 5.2\,GHz max);
+        \item[\dingblue{43}] 128\,GB RAM;
+        \item[\dingblue{43}] Fedora Linux 43 (kernel 6.19);
+        \item[\dingblue{43}] Cache hierarchy: 640\,KiB \textbf{L1-D}, 768\,KiB \textbf{L1-I}, 14\,MiB \textbf{L2}, 30\,MiB \textbf{L3}.
+    \end{itemize}
+    
+    We used LLVM 21.1.8 compiled in release, with no assertions, \textit{profile-guided optimizations} (PGO) disabled, studying the \texttt{-O3} pipeline.
+    
+    Runtime uses \texttt{hyperfine} (3 warmup, 15 timed runs), counters use \texttt{perf stat} (2 warmup, 10 timed) in a separate batch---10 runs suffice for CI95 below 1\% on all counter metrics.
 \end{frame}
 
+% cp tesi-bruzzone/trunk/papers/icse27/submission/figs/polybench_figs/fig19u_pass_impact_ranking_mean_median.pdf ./llvm-phd-presentation/images
+\begin{frame}[fragile]{Cumulative speedup, normalised gain, and Top-20 passes}
+    \begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+           \begin{center}
+	       \includegraphics[width=\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/figP9_optimization_saturation.pdf}
+           {\tiny$G_b^i = (S_{b}^{i}-1)/(S_{b}^{*}-1)\in[0,1]$}
+           \end{center}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \begin{center}
+        \includegraphics[width=\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/fig19u_pass_impact_ranking_mean_median.pdf}
+        {\scriptsize
+            \begin{itemize}
+                \item[\dingblue{43}] Pareto-skewed distribution: the top decile accounts for the majority of impact.
+        
+                \item[\dingblue{43}] The ranking is dominated by \texttt{early-cse}, \texttt{licm}, \texttt{instcombine}, \texttt{loop-vectorize}, \texttt{loop-rotate}, \texttt{loop-unroll}, \texttt{simplifycfg}, \texttt{sroa}, \texttt{indvars}.
+            \end{itemize}
+        }
+        \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
 
-\begin{frame}[fragile]{Pick and Choose 2mm Kernal from PolyBench}
+\begin{frame}[fragile]{\texttt{2mm} Linear-Algebra Kernel from PolyBench~\cite{Pouchet12}\footnote{
+    \mylink{https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/blob/master/polybench.pdf}{github.com/MatthiasJReisinger/PolyBenchC-4.2.1/polybench.pdf}
+}}
 \begin{columns}[T]
 	\begin{column}{0.5\textwidth}
+        A double matrix-matrix multiplication (GEMM) in \(O(N^3)\) time.
 		\begin{lstlisting}[basicstyle=\ttfamily\small, keywordstyle=\color{scribeaccent}\bfseries, language=C]
 /* D = a*A*B*C + b*D */
 for (i = 0; i < NI; i++)
@@ -170,62 +206,25 @@ for (i = 0; i < NI; i++)
 		\end{lstlisting}
 	\end{column}
 	\begin{column}{0.5\textwidth}
-		TMP
+        Pratical utility of the kernel:
+        \begin{itemize}
+            \item[\dingblue{43}] \textbf{Data Reuse}: CPU/GPU spatial and temporal cache locality.
+            \item[\dingblue{43}] \textbf{Pipeline Parallelism}: CPU/GPU SIMD, \textit{instruction level} parallelism (ILP), and superscalar pipelined execution.
+            \item[\dingblue{43}] \textbf{Deep Learning}: the basic block during inference (and training) in neural networks is \texttt{2mm}.
+            \item[\dingblue{43}] \textbf{Features}: \textit{affine} perfect (first) and imperfect (second) loop nests suitable for polyhedral optimizations.
+        \end{itemize}
 	\end{column}
 \end{columns}
 \end{frame}
 
-	% \begin{columns}[T]
-	% 	\begin{column}{0.5\textwidth}
-	% 		\begin{infobox}{Definition}
-	% 			A clean callout with a colored left rule.
-	% 		\end{infobox}
-	% 		\begin{warnbox}{Warning}
-	% 			A red box for caveats.
-	% 		\end{warnbox}
-	% 		\begin{tipbox}{Tip}
-	% 			A green box for tips and examples.
-	% 		\end{tipbox}
-	% 	\end{column}
-	% 	\begin{column}{0.5\textwidth}
-	% 		Inline boxes: \infoboxinline{info}, \warnboxinline{warn},
-	% 		\noteboxinline{note}.
-	% 		\medskip
-
-	% 		Colored dingbats, ported from \tool{scribe}:
-	% 		\begin{itemize}
-	% 			\item \dinggreen{52}~done
-	% 			\item \dingred{56}~failed
-	% 			\item \dingblue{43}~note
-	% 		\end{itemize}
-	% 		\jdcomment{Another comment, in blue, from John Doe.}
-	% 	\end{column}
-	% \end{columns}
-% \end{frame}
-
-\section{Math and code}
-
-\begin{frame}{Mathematics}
-	The factorial, set with the Libertine math defaults:
-	\begin{equation*}
-		fact(n) = \begin{cases}
-			1                 & \text{if } n = 0 \\
-			n \cdot fact(n-1) & \text{if } n > 0
-		\end{cases}
-	\end{equation*}
+\begin{frame}[fragile]{TMP}
+    \includegraphics[width=0.5\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/2mm.png}
 \end{frame}
 
-\begin{frame}[fragile]{Code listings}
-	Monospace is set in Inconsolata:
-\begin{lstlisting}[basicstyle=\ttfamily\small, keywordstyle=\color{scribeaccent}\bfseries, language=C]
-int fact(int n) {
-    if (n == 0) return 1;
-    return n * fact(n - 1);
-}
-\end{lstlisting}
-\end{frame}
 
-\section{Wrap-up}
+
+
+
 
 \begin{frame}[fragile]{Summary}
 	\begin{itemize}
