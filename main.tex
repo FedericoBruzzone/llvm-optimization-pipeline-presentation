@@ -239,12 +239,35 @@ for (i = 0; i < NI; i++)
     \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{HW counters aggregated across the PolyBench suite}
-    \includegraphics[width=\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/fig16e_cache_ipc_cpi_energy_ribbon_2x3.pdf}
+\begin{frame}[plain,noframenumbering]
+	\centering
+	\vfill
+	{\Large\bfseries Thank you!}
+
+	{\bfseries Questions?}
+	\scribedivider
+	\href{https://federicobruzzone.github.io/}{\texttt{federicobruzzone.github.io}}
+	\vfill
+\end{frame}
+
+% ============================
+% ========== Refs ============
+% ============================
+\begin{frame}[allowframebreaks, noframenumbering, plain]{References}
+	\scriptsize
+	\bibliographystyle{unsrt}
+	\bibliography{local,strings,metrics,compilers,data_structures,programming,software_engineering,software_architecture,dsl,pl,splc,oolanguages,my_work,grammars,ml+nn,security,roles,learning,cop,testing,dsu,distributed_systems,reflection,aosd,foundations,petri-nets,pattern,logic}
 \end{frame}
 
 
-\begin{frame}[fragile]{Bounded phase-interference loss}
+% ============================
+% ==== Additional slides =====
+% ============================
+\begin{frame}[fragile, noframenumbering, plain]{HW counters aggregated across the PolyBench suite}
+    \includegraphics[width=\textwidth, trim={0.25cm 0.25cm 0.25cm 0.25cm}, clip]{./images/fig16e_cache_ipc_cpi_energy_ribbon_2x3.pdf}
+\end{frame}
+
+\begin{frame}[fragile, noframenumbering, plain]{Bounded phase-interference loss}
     \begin{columns}[T]
 	\begin{column}{0.5\textwidth}
     \begin{center}
@@ -264,30 +287,98 @@ We \textbf{define} a novel optimistic additive bound:
 
 where $[x]_0^{S_\mathrm{opt}} = \min(\max(x,0), S_\mathrm{opt})$ and $S_\mathrm{actual} = S_\mathrm{final} - 1$.
 
+	    \scribedivider
+
+        $L$: mean 46.35\%!
         \end{center}
     \end{column}
     \end{columns}
+\end{frame}
 
+\begin{frame}[fragile, noframenumbering, plain]{Why $\sim$46\%, despite tiny $\Delta S_i$?}
+\begin{center}
+\textbf{Marginals telescope}: with $\Delta S_i = S_i - S_{i-1}$ and $S_0 = 1$, \(\sum_i \Delta S_i = S_\mathrm{final} - 1 = S_\mathrm{actual}\).
 
+So, splitting into constructive ($P$) and destructive ($N$) movement,
+\[
+    P = \sum_i \max(\Delta S_i, 0) = S_\mathrm{opt},
+    \qquad
+    N = \sum_i |\min(\Delta S_i, 0)|,
+\]
+the bound collapses (away from the clamp) to a \textbf{pure ratio}:
+\[
+    L = \frac{S_\mathrm{opt} - S_\mathrm{actual}}{S_\mathrm{opt}}
+      = \frac{P - (P - N)}{P}
+      = \boxed{\dfrac{N}{P}}.
+\]
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile, noframenumbering, plain]{Why $\sim$46\%, despite tiny $\Delta S_i$? (Cont.)}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{warnbox}{$L$ is scale-invariant}
+$L$ is a \emph{ratio}, not an amplitude: scale every $\Delta S_i$ by $1000$
+or by $0.001$ and $L$ does \textbf{not} change.
+Only the \emph{balance} destructive/constructive matters --- never the magnitude.
+\end{warnbox}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{tipbox}{No catastrophic pass needed}
+$|\Delta S_i|\!\approx\!0.2$--$0.3\%$ over \textbf{113 passes}:
+\[
+    \underbrace{S_\mathrm{opt}\!\approx\!9\%}_{P}\;\;
+    \text{erasing}\;\;\underbrace{6\%}_{N}
+    \;\Rightarrow\; L\!\approx\!67\%.
+\]
+Micro-deltas \emph{accumulate}.
+\end{tipbox}
+\end{column}
+\end{columns}
+
+\medskip
+\centering
+\small
+$\Rightarrow$ $L$ is a \textbf{ceiling, not a recoverable target}:
+the additive envelope $S_\mathrm{opt}$ is unrealisable (passes do not commute).
+\end{frame}
+
+\begin{frame}[fragile, noframenumbering, plain]{Publications}
+\tiny
+
+F. Bruzzone, W. Cazzola, M. Brancaleoni, and D. Pellegrino, \textit{Sink or SWIM: Tackling Real-Time ASR at Scale}, IEEE Transactions on Audio, Speech and Language Processing (TASLPRO), 2026.  DOI: \href{https://doi.org/10.1109/TASLPRO.2026.3675780}{10.1109/TASLPRO.2026.3675780}.  (Q1 Journal)
+
+F. Bruzzone, W. Cazzola, and L. Favalli, \textit{Code Less to Code More: Streamlining Language Server Protocol and Type System Development for Language Families}, Journal of Systems and Software (JSS), vol.~XXX, article~112554, 2025.  DOI: \href{https://doi.org/10.1016/j.jss.2025.112554}{10.1016/j.jss.2025.112554}.  (Q1 Journal)
+
+\textbf{Submitted to A* Conferences:}
+
+[International Conference on Software Engineering (ICSE)] F. Bruzzone and W. Cazzola, \textit{A Multi-Dimensional, Per-Pass Empirical Study of the LLVM Optimization Pipeline}.
+
+\textbf{Under review to Q1 Journals:}
+
+[Journal of Systems and Software (JSS)] --- F. Bruzzone, W. Cazzola, and L. Favalli, \textit{Generalized Software Product Line Extraction},  \href{https://arxiv.org/abs/2605.28989}{arxiv.org/abs/2605.28989}, 2026.
+
+[Transaction on Programming Languages and Systems (TOPLAS)] --- F. Bruzzone, W. Cazzola, and L. Favalli, \textit{Meta-Monomorphizing Specializations}, \href{https://arxiv.org/abs/2602.12973}{arxiv.org/abs/2602.12973}, 2026.
+
+[Transaction on Programming Languages and Systems (TOPLAS)] --- F. Bruzzone, W. Cazzola, and L. Favalli, \textit{From Separate Compilation to Sound Language Composition}, \href{https://arxiv.org/abs/2602.03777}{arxiv.org/abs/2602.03777}, 2026.
+
+[Journal of Systems and Software (JSS)] --- F. Bruzzone, W. Cazzola, and L. Favini, \textit{Prioritizing Configuration Relevance via Compiler-Based Refined Feature Ranking}, \href{https://arxiv.org/abs/2601.16008}{arxiv.org/abs/2601.16008}, 2026.
 
 \end{frame}
 
-\begin{frame}[plain,noframenumbering]
-	\centering
-	\vfill
-	{\Large\bfseries Thank you!}
-	\scribedivider
-	\href{https://federicobruzzone.github.io/}{\texttt{federicobruzzone.github.io}}
-	\vfill
-\end{frame}
-
-% ============================
-% ========== Refs ============
-% ============================
-\begin{frame}[allowframebreaks, noframenumbering, plain]{References}
-	\scriptsize
-	\bibliographystyle{unsrt}
-	\bibliography{local,strings,metrics,compilers,data_structures,programming,software_engineering,software_architecture,dsl,pl,splc,oolanguages,my_work,grammars,ml+nn,security,roles,learning,cop,testing,dsu,distributed_systems,reflection,aosd,foundations,petri-nets,pattern,logic}
-\end{frame}
 
 \end{document}
+
+% \medskip
+%         \begin{alertblock}{Why $\sim$46\%, despite tiny $\Delta S_i$?}
+%         Since $\sum_i \Delta S_i = S_\mathrm{actual}$, the bound reduces to
+%         \[
+%             L = \frac{N}{P},\quad
+%             P=\!\sum\max(\Delta S_i,0),\;
+%             N=\!\sum|\min(\Delta S_i,0)|.
+%         \]
+%         A \textbf{scale-invariant ratio}: only the
+%         \emph{balance} destructive/constructive matters, not the magnitude.
+%         Per-pass $|\Delta S_i|\!\approx\!0.2$--$0.3\%$, but over
+%         \textbf{113 passes} they accumulate.
+%         \end{alertblock}
