@@ -38,7 +38,8 @@
 	Computer Science Department, Università degli Studi di Milano\\
 	Supervisor: Prof. \textbf{Walter Cazzola} \\
 	Email: \href{mailto:federico.bruzzone@unimi.it}{\texttt{federico.bruzzone@unimi.it}} \\
-	Website: \mylink{https://federicobruzzone.github.io}{federicobruzzone.github.io}
+	Website: \mylink{https://federicobruzzone.github.io}{federicobruzzone.github.io} \\
+	Slides: \mylink{https://federicobruzzone.github.io/presentations/llvm-optimization-pipeline.pdf}{federicobruzzone.github.io/presentations/llvm-optimization-pipeline.pdf}
 }
 \date{22 June 2026}
 
@@ -73,7 +74,7 @@
 
 	Since the dawn of computing, compiler optimizations have long bridged high-level abstractions and efficient machine code~\cite{Ershov58, Heller61, McKeeman65, Gear65, Lowry69, Busam69}.
 
-	\textbf{Optimizing compilers}~\cite{Allen66, Wulf73b} use analysis passes to guide transformations~\cite{Cooper22, Kennedy01b, Paige97} that enhance performance without altering observable behavior~\cite{Bacon94, Dodds18, Aho06}---modern architectures (e.g., x86-64, Aarch64) make this an interplay of interdependent passes~\cite{Cooper22}.
+	\textbf{Optimizing compilers}~\cite{Allen66, Wulf73b} use analysis passes to guide transformations~\cite{Cooper22, Kennedy01b, Paige97} that enhance performance without altering observable behavior~\cite{Bacon94, Dodds18, Aho06}---modern architectures (e.g., x86-64, AArch64) make this an interplay of interdependent passes~\cite{Cooper22}.
 
 	\textbf{LLVM}~\cite{Lattner04} exemplifies this complexity, serving as the standard backend for C/C++, Rust~\cite{Matsakis14}, Julia~\cite{Bezanson12}, and via \textbf{MLIR}~\cite{Lattner21}---for \textit{machine learning} (ML) and \textit{deep learning} (DL) stacks~\cite{Paszke19, Abadi16} that rely on ML/DL optimizing compilers~\cite{Li20b, Xing19, Zhao18, Liu22d} (e.g., NVCC\footnote{
 		\mylink{https://developer.nvidia.com/cuda-llvm-compiler}{developer.nvidia.com/cuda-llvm-compiler}
@@ -239,6 +240,15 @@ for (i = 0; i < NI; i++)
     \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]{Takeaways}
+    \begin{itemize}
+        \item[\dingblue{43}] The top-10 passes are responsible for the majority of the performance impact.
+        \item[\dingblue{43}] Measuring only execution time is insufficient to understand the trade-offs between passes.
+        \item[\dingblue{43}] HW counters provide a more detailed view of the impact of passes on the underlying architecture.
+        \item[\dingblue{43}] Studying LLVM optimizations is important for both general-purpose and domain-specific programming languages, including AI/ML/DL workloads.
+    \end{itemize}
+\end{frame}
+
 \begin{frame}[plain,noframenumbering]
 	\centering
 	\vfill
@@ -246,7 +256,9 @@ for (i = 0; i < NI; i++)
 
 	{\bfseries Questions?}
 	\scribedivider
-	\href{https://federicobruzzone.github.io/}{\texttt{federicobruzzone.github.io}}
+	\href{https://federicobruzzone.github.io/}{\texttt{federicobruzzone.github.io}} \\
+	\smallskip
+	\small Slides: \mylink{https://federicobruzzone.github.io/presentations/llvm-optimization-pipeline.pdf}{federicobruzzone.github.io/presentations/llvm-optimization-pipeline.pdf}
 	\vfill
 \end{frame}
 
@@ -365,6 +377,35 @@ F. Bruzzone, W. Cazzola, and L. Favalli, \textit{Code Less to Code More: Streaml
 [Journal of Systems and Software (JSS)] --- F. Bruzzone, W. Cazzola, and L. Favini, \textit{Prioritizing Configuration Relevance via Compiler-Based Refined Feature Ranking}, \href{https://arxiv.org/abs/2601.16008}{arxiv.org/abs/2601.16008}, 2026.
 
 \end{frame}
+
+\begin{frame}[fragile, noframenumbering, plain]{PhD Courses and International  Collaboration}
+\tiny
+
+I'm collaborating with MLIR and LLVM community.
+
+I'm planning collaborate with:
+\begin{itemize}
+   \item[\dingblue{43}] RWTH Aachen University
+   \item[\dingblue{43}] ARM
+   \item[\dingblue{43}] Roofline.ai
+\end{itemize}
+
+\textbf{Courses taken (CFU 13/12):}
+
+\begin{itemize}
+   \item[\dingblue{43}] RESOURCES ALLOCATION IN MOBILE EDGE COMPUTING, INF/01, AP, 31-10-2024, CFU 2
+   \item[\dingblue{43}] CONSTRUCTING AND MINING BIOMEDICAL KNOWLEDGE GRAPHS, INF/01, AP, 27-02-2025, CFU 4
+   \item[\dingblue{43}] MATEURISTICHE PER PROBLEMI DI OTTIMIZZAZIONE COMBINATORIA (MODULE 1), INF/01, AP, 31-10-2025, CFU 2
+   \item[\dingblue{43}] MATEURISTICHE PER PROBLEMI DI OTTIMIZZAZIONE COMBINATORIA (MODULE 2), INF/01, AP, 27-11-2025, CFU 2
+   \item[\dingblue{43}] SHAPE YOUR OWN PROGRAMMING LANGUAGE, INF/01, AP, 19-03-2026, CFU 3
+\end{itemize}
+
+
+
+
+
+\end{frame}
+
 
 
 \end{document}
